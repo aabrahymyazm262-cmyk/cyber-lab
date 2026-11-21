@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>آزمایشگاه امنیت سایبری</title>
+<title>اشتراک‌گذاری موقعیت مکانی</title>
 <style>
 body {
   font-family: sans-serif;
@@ -13,37 +13,116 @@ body {
   padding: 25px;
 }
 .box {
-  max-width: 500px;
-  margin: 50px auto;
+  max-width: 450px;
+  margin: 45px auto;
   padding: 25px;
   background: #1e293b;
   border-radius: 18px;
 }
 button {
-  padding: 13px 20px;
+  display: block;
+  width: 100%;
+  margin-top: 18px;
+  padding: 15px;
   border: 0;
   border-radius: 10px;
   background: #38bdf8;
+  color: #101827;
   font-size: 16px;
-  cursor: pointer;
+}
+button:disabled {
+  opacity: .4;
+}
+.result {
+  background: #0f172a;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  direction: ltr;
+  overflow-wrap: anywhere;
 }
 </style>
 </head>
 <body>
 <div class="box">
-<h1>آزمایشگاه امنیت سایبری</h1>
-<p>به محیط آموزشی امنیت سایبری خوش آمدید.</p>
-<h3>حریم خصوصی و موقعیت مکانی</h3>
-<p>
-این صفحه موقعیت مکانی شما را دریافت یا ذخیره نمی‌کند.
-برای اشتراک‌گذاری موقعیت، از قابلیت رسمی Google Maps
-استفاده کنید و گیرنده را خودتان انتخاب کنید.
-</p>
-<button onclick="alert('امنیت یعنی آگاهی، اجازه و احترام به حریم خصوصی!')">
-شروع آموزش
-</button>
+  <h2>اشتراک‌گذاری موقعیت مکانی</h2>
+  <p>
+    با انتخاب دکمهٔ زیر، مرورگر اجازهٔ دسترسی به
+    موقعیت مکانی شما را درخواست می‌کند.
+    مختصات فقط پس از تأیید شما نمایش داده می‌شود.
+  </p>
+
+  <button id="get">دریافت موقعیت مکانی من</button>
+
+  <div id="result" class="result">
+    هنوز موقعیتی دریافت نشده است.
+  </div>
+
+  <button id="share" disabled>
+    اشتراک‌گذاری موقعیت
+  </button>
+
+  <p id="message"></p>
 </div>
+
+<script>
+let locationText = "";
+
+const getButton = document.getElementById("get");
+const shareButton = document.getElementById("share");
+const result = document.getElementById("result");
+const message = document.getElementById("message");
+
+getButton.onclick = () => {
+  if (!navigator.geolocation) {
+    message.textContent = "مرورگر شما از موقعیت مکانی پشتیبانی نمی‌کند.";
+    return;
+  }
+
+  message.textContent = "در حال دریافت موقعیت...";
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      locationText =
+        "عرض جغرافیایی: " + lat +
+        "\nطول جغرافیایی: " + lon;
+
+      result.textContent = locationText;
+      shareButton.disabled = false;
+      message.textContent = "موقعیت با موفقیت دریافت شد.";
+    },
+    () => {
+      message.textContent =
+        "دسترسی داده نشد یا دریافت موقعیت ناموفق بود.";
+    },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+};
+
+shareButton.onclick = async () => {
+  if (!locationText) return;
+
+  if (!navigator.share) {
+    message.textContent =
+      "اشتراک‌گذاری مستقیم در این مرورگر پشتیبانی نمی‌شود.";
+    return;
+  }
+
+  try {
+    await navigator.share({
+      title: "موقعیت مکانی من",
+      text: locationText
+    });
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      message.textContent = "اشتراک‌گذاری انجام نشد.";
+    }
+  }
+};
+</script>
 </body>
 </html>
-O
 
